@@ -1,0 +1,91 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Real time detection"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import cv2\n",
+    "import mediapipe as mp\n",
+    "import numpy as np\n",
+    "import tensorflow as tf\n",
+    "from tensorflow import keras\n",
+    "\n",
+    "with open('model_architecture.json', 'r') as f:\n",
+    "  model_json = f.read()\n",
+    "\n",
+    "model = keras.models.model_from_json(model_json)\n",
+    "\n",
+    "model.load_weights('model_weights.h5')\n",
+    "\n",
+    "model.compile(optimizer='rmsprop',\n",
+    "                loss='categorical_crossentropy',\n",
+    "                metrics=['accuracy'])\n",
+    "\n",
+    "def initialize_mediapipe():\n",
+    "    mp_hands = mp.solutions.hands\n",
+    "    return mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5,\n",
+    "                          min_tracking_confidence=0.5)\n",
+    "\n",
+    "def detect_sign_language(model):\n",
+    "    hands = initialize_mediapipe()\n",
+    "    label_map = {0: 'Help', 1: 'Water', 2: 'Game', 3: 'Movie', 4: 'What', 5: 'Me'}\n",
+    "\n",
+    "    cap = cv2.VideoCapture(0)\n",
+    "\n",
+    "    while cap.isOpened():\n",
+    "        ret, frame = cap.read()\n",
+    "        if not ret:\n",
+    "            break\n",
+    "\n",
+    "        image = cv2.cvtColor(cv2.flip(frame, 1), cv2.COLOR_BGR2RGB)\n",
+    "\n",
+    "        image.flags.writeable = False\n",
+    "        results = hands.process(image)\n",
+    "\n",
+    "        image.flags.writeable = True\n",
+    "        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)\n",
+    "\n",
+    "        if results.multi_hand_landmarks:\n",
+    "            for hand_landmarks in results.multi_hand_landmarks:\n",
+    "                hand_landmarks_np = np.array([[lm.x, lm.y, lm.z] for lm in hand_landmarks.landmark])\n",
+    "                hand_landmarks_flat = hand_landmarks_np.flatten()\n",
+    "\n",
+    "                hand_landmarks_flat = hand_landmarks_flat.reshape((1, -1))\n",
+    "\n",
+    "                hand_landmarks_flat = np.expand_dims(hand_landmarks_flat, axis=-1)\n",
+    "\n",
+    "                predicted_class = np.argmax(model.predict(hand_landmarks_flat))\n",
+    "                detected_sign = label_map[predicted_class]\n",
+    "\n",
+    "                cv2.putText(frame, detected_sign, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 4)\n",
+    "\n",
+    "        cv2.imshow('Sign Language Detection', frame)\n",
+    "\n",
+    "        # Press 'q' to exit the loop\n",
+    "        if cv2.waitKey(1) & 0xFF == ord('q'):\n",
+    "            break\n",
+    "\n",
+    "    cap.release()\n",
+    "    cv2.destroyAllWindows()\n",
+    "     \n",
+    "detect_sign_language(model)\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "language_info": {
+   "name": "python"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

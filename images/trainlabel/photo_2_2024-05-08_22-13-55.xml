@@ -1,0 +1,26 @@
+<annotation>
+	<folder>collectedimages</folder>
+	<filename>photo_2_2024-05-08_22-13-55.jpg</filename>
+	<path>C:\Users\abdo\Desktop\sign language\RealTimeObjectDetection\Tensorflow\workspace\images\collectedimages\photo_2_2024-05-08_22-13-55.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>What</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>313</xmin>
+			<ymin>145</ymin>
+			<xmax>640</xmax>
+			<ymax>310</ymax>
+		</bndbox>
+	</object>
+</annotation>
